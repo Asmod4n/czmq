@@ -1,4 +1,4 @@
-﻿/*  =========================================================================
+/*  =========================================================================
     zchunk - work with memory chunks
 
     Copyright (c) the Contributors as noted in the AUTHORS file.
@@ -522,6 +522,29 @@ zchunk_is (void *self)
 {
     assert (self);
     return ((zchunk_t *) self)->tag == ZCHUNK_TAG;
+}
+
+//  --------------------------------------------------------------------------
+// Send a zchunk to a zsock via zero copy.
+
+int
+zchunk_send (zchunk_t *self, zmq_free_fn *ffn, void *hint, void *dest, int flags)
+{
+    assert (self);
+    assert (dest);
+
+    zmq_msg_t msg;
+    int rc = -1;
+    void *handle = zsock_resolve (dest);
+
+    rc = zmq_msg_init_data (&msg, zchunk_data (self), zchunk_size (self), ffn, hint);
+    if (rc == 0) {
+        rc = zmq_sendmsg (handle, &msg, flags);
+        if (rc == -1)
+            zmq_msg_close (&msg);
+    }
+
+    return rc;
 }
 
 

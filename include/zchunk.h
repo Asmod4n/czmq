@@ -137,6 +137,11 @@ CZMQ_EXPORT void
 CZMQ_EXPORT bool
     zchunk_is (void *self);
 
+
+// Send a zchunk to a zsock via zero copy.
+CZMQ_EXPORT int
+    zchunk_send (zchunk_t *self, zmq_free_fn *ffn, void *hint, void *dest, int flags)
+
 //  Self test of this class
 CZMQ_EXPORT void
     zchunk_test (bool verbose);

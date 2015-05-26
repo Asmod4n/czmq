@@ -540,7 +540,7 @@ int
 zchunk_send (zchunk_t *self, void *dest, int flags)
 {
     assert (self);
-    assert (zchunk_is (self))
+    assert (zchunk_is (self));
     assert (dest);
     void *handle = zsock_resolve (dest);
     assert (handle);
@@ -554,11 +554,8 @@ zchunk_send (zchunk_t *self, void *dest, int flags)
         rc = zmq_msg_init_data (&msg, self->data, self->size, NULL, NULL);
     else
         rc = zmq_msg_init_data (&msg, self->data, self->size, __zchunk_free_fn, self);
-    if (rc == 0) {
+    if (rc == 0)
         rc = zmq_sendmsg (handle, &msg, send_flags);
-        if (rc == -1)
-            zmq_msg_close (&msg);
-    }
 
     return rc;
 }

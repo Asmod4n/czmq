@@ -144,7 +144,7 @@ CZMQ_EXPORT bool
 //  Send chunk to socket, destroy after sending unless ZCHUNK_REUSE is
 //  set or the attempt to send the message errors out.
 CZMQ_EXPORT int
-    zchunk_send (zchunk_t *self, void *dest, int flags)
+    zchunk_send (zchunk_t *self, void *dest, int flags);
 
 //  Self test of this class
 CZMQ_EXPORT void

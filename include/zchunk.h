@@ -19,6 +19,10 @@ extern "C" {
 #endif
 
 //  @interface
+#define ZCHUNK_MORE 1
+#define ZCHUNK_REUSE 2
+#define ZCHUNK_DONTWAIT 4
+
 //  Create a new chunk of the specified size. If you specify the data, it
 //  is copied into the chunk. If you do not specify the data, the chunk is
 //  allocated and left empty, and you can then add data using zchunk_append.
@@ -137,10 +141,10 @@ CZMQ_EXPORT void
 CZMQ_EXPORT bool
     zchunk_is (void *self);
 
-
-// Send a zchunk to a zsock via zero copy.
+//  Send chunk to socket, destroy after sending unless ZCHUNK_REUSE is
+//  set or the attempt to send the message errors out.
 CZMQ_EXPORT int
-    zchunk_send (zchunk_t *self, zmq_free_fn *ffn, void *hint, void *dest, int flags)
+    zchunk_send (zchunk_t *self, void *dest, int flags)
 
 //  Self test of this class
 CZMQ_EXPORT void

@@ -524,22 +524,38 @@ zchunk_is (void *self)
     return ((zchunk_t *) self)->tag == ZCHUNK_TAG;
 }
 
+static void
+__zchunk_free_fn (void *data, void *hint)
+{
+    assert (hint);
+    assert (zchunk_is (hint));
+    zchunk_destroy ((zchunk_t **) &hint);
+}
+
 //  --------------------------------------------------------------------------
-// Send a zchunk to a zsock via zero copy.
+//  Send chunk to socket, destroy after sending unless ZCHUNK_REUSE is
+//  set or the attempt to send the message errors out.
 
 int
-zchunk_send (zchunk_t *self, zmq_free_fn *ffn, void *hint, void *dest, int flags)
+zchunk_send (zchunk_t *self, void *dest, int flags)
 {
     assert (self);
+    assert (zchunk_is (self))
     assert (dest);
+    void *handle = zsock_resolve (dest);
+    assert (handle);
 
     zmq_msg_t msg;
     int rc = -1;
-    void *handle = zsock_resolve (dest);
+    int send_flags = (flags & ZCHUNK_MORE)? ZMQ_SNDMORE: 0;
+    send_flags |= (flags & ZCHUNK_DONTWAIT)? ZMQ_DONTWAIT: 0;
 
-    rc = zmq_msg_init_data (&msg, zchunk_data (self), zchunk_size (self), ffn, hint);
+    if (flags & ZCHUNK_REUSE)
+        rc = zmq_msg_init_data (&msg, self->data, self->size, NULL, NULL);
+    else
+        rc = zmq_msg_init_data (&msg, self->data, self->size, __zchunk_free_fn, self);
     if (rc == 0) {
-        rc = zmq_sendmsg (handle, &msg, flags);
+        rc = zmq_sendmsg (handle, &msg, send_flags);
         if (rc == -1)
             zmq_msg_close (&msg);
     }
